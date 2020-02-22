@@ -8,7 +8,7 @@ public:
 protected:
 	//Moguca protected sekcija
 private:
-
+	//Moguca private sekcija!
 };
 
-#endif// ! __COMPILER_H_
+#endif // ! __COMPILER_H_
