@@ -113,3 +113,20 @@ void Compiler::ispisiPostfiks(const fstream& izlazni_fajl) const
 	for (int i = 0; i < l; i++)
 		std::cout<<postfix_izraz_[i];
 }
+
+void Compiler::strategijaPisi(Strategija* strategija)
+{
+	delete strategija_pisi_;  
+	strategija_pisi_ = strategija;
+}
+
+void Compiler::strategijaCitaj(Strategija* strategija)
+{
+	delete strategija_citaj_;
+	strategija_citaj_ = strategija;
+}
+
+void Compiler::citaj(const string& ime_fajla)
+{
+	strategija_citaj_->citaj(ime_fajla);
+}

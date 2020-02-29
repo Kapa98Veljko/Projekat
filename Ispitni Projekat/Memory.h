@@ -3,8 +3,9 @@
 
 #include<iostream>
 #include<string>
-using namespace std;
+#include<vector>
 
+using namespace std;
 class Memory {
 
 public:
@@ -13,7 +14,9 @@ public:
 protected:
 
 private:
-
+	//
+	vector<char> promenljive_;
+	vector<float> vrednost_;
 };
 
 #endif//! _MEMORY_H_

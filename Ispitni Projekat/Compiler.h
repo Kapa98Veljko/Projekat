@@ -1,5 +1,6 @@
 #ifndef __COMPILER_H_
 #define __COMPILER_H_
+#include"Strategija.h"
 
 #include<fstream>
 #include<iomanip>
@@ -23,6 +24,13 @@ public:
 	int prioritet(char) const;
 	void ispisiPostfiks(const fstream&)const;
 
+	//Biranje strategije
+	void strategijaPisi(Strategija*);
+	void strategijaCitaj(Strategija*);
+	//Pozivanje strategije
+	void citaj(const string&);
+	
+
 protected:
 	//Moguca protected sekcija
 private:
@@ -33,6 +41,9 @@ private:
 	stack<char> stack_;
 	//Ime izlaznog imf fajla.
 	string novo_ime_;
+	//Strategija upis/ispis
+	Strategija* strategija_citaj_ = nullptr;
+	Strategija* strategija_pisi_ = nullptr;
 };
 
-#endif // ! __COMPILER_H_
+#endif //! __COMPILER_H_
