@@ -1,13 +1,14 @@
 #include "Strategija.h"
 #include<iostream>
-void Program::citaj(const string& ime_fajla)
-{
-	fstream program(ime_fajla,ios::in);
 
-	program.close();
+void Program::citajProg(const string& ime_fajla,vector<char>& postfiks)
+{
+	fstream fajl(ime_fajla,ios::in);
+
+	fajl.close();
 }
 
-void Konfiguracija::citaj(const string& ime_fajla)
+void Konfiguracija::citajKonf(const string& ime_fajla,vector<int>& konfiguracija)
 {
 	fstream konf_fajl(ime_fajla, ios::in);
 	while (konf_fajl.peek() != EOF) 
@@ -17,16 +18,18 @@ void Konfiguracija::citaj(const string& ime_fajla)
 		
 			if (t == 'T')
 			{
-				citajKasnjenje(konf_fajl);
+				citajKasnjenje(konf_fajl,konfiguracija);
 				
 			}
 			else if (t=='N') 
 			{
-				citajParalUpise(konf_fajl);
+				konf_fajl >> t>>t;
+				konfiguracija[1] = citajVrednosti(konf_fajl);
+				
 			}
 			else if (t == 'c') 
 			{
-				bool desno = false;
+				bool desno = false,simple=true;
 				string kompilacija;
 				while (konf_fajl.peek() != EOF) 
 				{  
@@ -38,7 +41,9 @@ void Konfiguracija::citaj(const string& ime_fajla)
 						konf_fajl >> t;
 						kompilacija += t;
 						if (kompilacija == "advanced")
-							simple_ = false;
+							simple= false;
+
+							konfiguracija[0] = int(simple);
 					}
 				}
 			
@@ -46,8 +51,7 @@ void Konfiguracija::citaj(const string& ime_fajla)
 			
 		
 	}
-
-	std::cout << ta_ << ' ' << tm_ << ' ' << te_ << ' '<<tw_<<' ' <<nw_<<' '<<int(simple_)<< endl;
+	
 	konf_fajl.close();
 }
 
@@ -70,35 +74,21 @@ int Konfiguracija::citajVrednosti(fstream& ulazni_fajl) const
 	return vrati;
 }
 
-void Konfiguracija::citajKasnjenje(fstream& ulazni_fajl)
+void Konfiguracija::citajKasnjenje(fstream& ulazni_fajl,vector<int>& konfiguracija)
 {
 	char operacija;
-	ulazni_fajl >> operacija;
 	char t;
-	
-	ulazni_fajl >> t;
+    //Citanje operacije i znaka '='
+	ulazni_fajl >> operacija>>t;
+
 	int b= citajVrednosti(ulazni_fajl);
 	switch (operacija)
 	{
-	case'a':ta_ = b; break;
-	case'm':tm_ = b; break;
-	case'e':te_ = b; break;
-	case'w':tw_ = b; break;
+	case'a':konfiguracija[2]=b; break;
+	case'm':konfiguracija[3] = b; break;
+	case'e':konfiguracija[4] = b; break;
+	case'w':konfiguracija[5]  = b; break;
 	}
 }
 
-void Konfiguracija::citajParalUpise(fstream& fajl)
-{
-	char t;
-	fajl >> t;
-	fajl >> t;
-	nw_=citajVrednosti(fajl);
-}
 
-void KlasicanIspis::pisi() const
-{
-}
-
-void NapredanIspis::pisi() const
-{
-}

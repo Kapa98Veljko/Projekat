@@ -33,13 +33,6 @@ void Compiler::obradiProgram(const string& ime_,const string& ime_txt)
 
 }
 
-//Stvara se izlazni fajl na osnovu imena ulaznog fajla.
-void Compiler::napraviIme(const string& ime)
-{
-	novo_ime_ = ime + ".imf";
-	
-}
-
 void Compiler::infiksPostfiks(fstream& ulazni_fajl)
 {
 
@@ -54,7 +47,7 @@ void Compiler::infiksPostfiks(fstream& ulazni_fajl)
 		//Ako se u citanju naidje na operdane ipisi ih u izlazni vektor.
 		if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9'))
 		{
-			postfix_izraz_.push_back(c);
+			postfix_.push_back(c);
 		}
 		//Ako je znak operand samo ga upisem u vektor znakova.
 
@@ -74,7 +67,7 @@ void Compiler::infiksPostfiks(fstream& ulazni_fajl)
 					//Sve dok je prioritet operanda na steku veci uspisuj ono sa steka u vektor.
 					while (veciPrioritet(stack_.top(), c)&& !stack_.empty()) 
 					{
-						postfix_izraz_.push_back(stack_.top());
+						postfix_.push_back(stack_.top());
 					}
 					//Upis na stek.
 					stack_.push(c);
@@ -109,24 +102,38 @@ int Compiler::prioritet(char c) const
 
 void Compiler::ispisiPostfiks(const fstream& izlazni_fajl) const
 {
-	int l = postfix_izraz_.size();
+	int l = postfix_.size();
 	for (int i = 0; i < l; i++)
-		std::cout<<postfix_izraz_[i];
+		std::cout<<postfix_[i];
 }
 
-void Compiler::strategijaPisi(Strategija* strategija)
+void Compiler::strategijaBiranje(Strategija* strategija)
 {
-	delete strategija_pisi_;  
-	strategija_pisi_ = strategija;
+	delete strategija_;
+	strategija_= strategija;
 }
 
-void Compiler::strategijaCitaj(Strategija* strategija)
+void Compiler::kompajluj(const string& ime_fajla,int tip=0)
 {
-	delete strategija_citaj_;
-	strategija_citaj_ = strategija;
+	//tip=0 -config.txt, tip=1 -program.txt
+	//Napomena uvek ce se prvo iscitati konfiguracioni fajl.
+
+	if (!tip) 
+	{
+		strategija_->citajKonf(ime_fajla, konfiguracija_);
+		
+	}
+	else 
+	{
+		//Zelim da stalno menjam strategiju pri citanju programskog fajla.
+		//Da se nakon svakog reda citanja izvrsi ipis u .imf fajl u zavisnosti sta se nalazi u tom redu programskog fajla.
+		
+		int tip_kompilacije = konfiguracija_[0];
+		
+		strategija_->citajProg(ime_fajla, postfix_);
+		strategijaBiranje(new Program());
+		strategijaBiranje(new ProtocniIspis());
+	}
 }
 
-void Compiler::citaj(const string& ime_fajla)
-{
-	strategija_citaj_->citaj(ime_fajla);
-}
+

@@ -1,6 +1,6 @@
 Ta = 5
 Tm = 10
-Te = 20897
-Tw = 4099
-Nw = 189
-compilation = advanced
+Te = 20
+Tw = 40
+Nw = 1
+compilation = simple

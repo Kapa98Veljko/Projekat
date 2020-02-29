@@ -4,50 +4,44 @@
 #include<fstream>
 #include<iomanip>
 #include<string>
+#include<vector>
 
 using namespace std;
+
 class Strategija {
 public:
-	virtual void citaj(const string&) {};
+	//Za citanje konfiguracije
+	virtual void citajKonf(const string&,vector<int>&) {};
+	//Za citanje programa
+	virtual void citajProg(const string&,vector<char>&) {}
+
+	//Za odabrani nacin stvaranja .imf fajla.
 	virtual void pisi() const {};
 };
 
 class Program :public Strategija {
 public:
-	virtual void citaj(const string&) override;
+	virtual void citajProg(const string&,vector<char>&) override;
 
 };
 
 class Konfiguracija :public Strategija {
 public:
 
-	//Sada Masina moze da pristupi privatnim poljima.
-	//friend class Machine;
-
-	virtual void citaj(const string&) override;
+	virtual void citajKonf(const string&,vector<int>&) override;
 	int citajVrednosti(fstream&) const;
-	void citajKasnjenje(fstream&);
-	void citajParalUpise(fstream&);
+	void citajKasnjenje(fstream&,vector<int>&);
 
-private:
-	//Kasnjenja
-	int ta_ = 0;
-	int tm_ = 0;
-	int tw_ = 0;
-	int te_ = 0;
-	//Kompilacija
-	bool simple_ = true;
-	//Paralelni upisi
-	int nw_ = 0;
 };
 
-class KlasicanIspis :public Strategija {
+class NojmanIspis :public Strategija {
 public:
-	virtual void pisi()const override;
+	virtual void pisi() const override;
 };
 
-class NapredanIspis :public Strategija {
+class ProtocniIspis :public Strategija {
 public:
-	virtual void pisi()const override;
+
 };
+
 #endif//! _STRATEGIJA_H_
