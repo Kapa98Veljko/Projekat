@@ -1,11 +1,56 @@
 #include "Strategija.h"
 #include<iostream>
 
-void Program::citajProg(const string& ime_fajla,vector<char>& postfiks)
+void Program::citajProg(fstream& program,vector<char>& postfix)
 {
-	fstream fajl(ime_fajla,ios::in);
+	char dodeli;
+	char c;
+	//Cita se ona prom. u koju se upise vr. celog izraza sa desne strane.
+	program >>dodeli>> c;
 
-	fajl.close();
+	postfix.push_back(dodeli);
+	postfix.push_back(c);
+
+	while (program.peek() != '\n')
+	{
+		program >> c;
+		infixPostfix(postfix,c);
+	}
+}
+
+bool Program::isOperator(char c)
+{
+	if (c == '^' || c == '*' || c == '/' || c == '+' || c == '-')
+		return true;
+	return false;
+}
+
+bool Program::isOperand(char c)
+{
+	if ((c >= 'a' && c <= 'z')|| (c >= 'A' && c <= 'Z')|| (c >= '1' && c <= '9'))
+		return true;
+	return false;
+}
+
+int Program::prioritet(char c)
+{
+	if (c == '^')
+		return 3;
+	else if (c == '*' || c=='/')
+		return 2;
+	else if (c == '+' || c == '-')
+		return 1;
+}
+
+char Program::infixPostfix(vector<char>& postfix,char c)
+{
+	if (isOperand(c))
+		postfix.push_back(c);
+	else if (isOperator(c)) 
+	{
+		if (!stack_.empty())
+			stack_.push(c);
+	}
 }
 
 void Konfiguracija::citajKonf(const string& ime_fajla,vector<int>& konfiguracija)
@@ -74,21 +119,20 @@ int Konfiguracija::citajVrednosti(fstream& ulazni_fajl) const
 	return vrati;
 }
 
-void Konfiguracija::citajKasnjenje(fstream& ulazni_fajl,vector<int>& konfiguracija)
+void Konfiguracija::citajKasnjenje(fstream& ulazni_fajl, vector<int>& konfiguracija)
 {
 	char operacija;
 	char t;
-    //Citanje operacije i znaka '='
-	ulazni_fajl >> operacija>>t;
+	//Citanje operacije i znaka '='
+	ulazni_fajl >> operacija >> t;
 
-	int b= citajVrednosti(ulazni_fajl);
-	switch (operacija)
-	{
-	case'a':konfiguracija[2]=b; break;
-	case'm':konfiguracija[3] = b; break;
-	case'e':konfiguracija[4] = b; break;
-	case'w':konfiguracija[5]  = b; break;
-	}
+	int b = citajVrednosti(ulazni_fajl);
+	konfiguracija.push_back(b);
 }
 
+void NojmanIspis::pisi(const string& ime) const
+{
+	fstream imf(ime+".imf",ios::out);
 
+	imf.close();
+}

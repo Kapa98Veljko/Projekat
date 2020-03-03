@@ -3,26 +3,34 @@
 
 #include<fstream>
 #include<iomanip>
+#include<stack>
 #include<string>
 #include<vector>
 
 using namespace std;
+//Poslednji ispisani red da bih pamtio dokle sam stigao sa ispisom
+static int IDReda = 1;
 
 class Strategija {
 public:
 	//Za citanje konfiguracije
 	virtual void citajKonf(const string&,vector<int>&) {};
 	//Za citanje programa
-	virtual void citajProg(const string&,vector<char>&) {}
+	virtual void citajProg(fstream&,vector<char>&) {}
 
 	//Za odabrani nacin stvaranja .imf fajla.
-	virtual void pisi() const {};
+	virtual void pisi(const string&) const {};
 };
 
 class Program :public Strategija {
 public:
-	virtual void citajProg(const string&,vector<char>&) override;
-
+	virtual void citajProg(fstream&, vector<char>&) override;
+	bool isOperator(char);
+	bool isOperand(char);
+	int prioritet(char);
+	char infixPostfix(vector<char>&,char);
+private:
+	stack<char> stack_;
 };
 
 class Konfiguracija :public Strategija {
@@ -36,7 +44,9 @@ public:
 
 class NojmanIspis :public Strategija {
 public:
-	virtual void pisi() const override;
+	virtual void pisi(const string&) const override;
+private:
+
 };
 
 class ProtocniIspis :public Strategija {

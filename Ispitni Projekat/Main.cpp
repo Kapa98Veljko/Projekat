@@ -12,16 +12,16 @@ int main() {
 		{
 			Compiler* cmp = new Compiler();
 
-			std::string ime;
+			std::string imeFajla;
 			std::cout << "Unesite ime konfiguracionog fajla." << endl;
 			
-			std::cin >> ime;
+			std::cin >> imeFajla;
 
 			cmp->strategijaBiranje(new Konfiguracija());
-            cmp->citaj(ime + ".txt");
+            cmp->kompajluj(imeFajla,0);
 
 			std::cout << "Unesite ime programa." << endl;
-			std::cin >> ime;
+			std::cin >> imeFajla;
 	
 			//cmp->strategijaBiranje(new Program());
 			//cmp->citaj(ime+".txt",1);
