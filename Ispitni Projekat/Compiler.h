@@ -27,8 +27,8 @@ protected:
 	//Moguca protected sekcija
 private:
 
-	vector<char> postfix_;//Postfix oblik izraza se cuva kao niz znakova.                 [5],[4],[0],[1],[2],[3]
-	vector<int> konfiguracija_;//U ovom poredku se upisuju u vektor --comilation(simple=true),Nw, Ta, Tm, Te, Tw--
+	vector<char> postfix_;//Postfix oblik izraza se cuva kao niz znakova. [0],[1],[2],[3],[4],[5]
+	vector<int> konfiguracija_;//U ovom poredku se upisuju u vektor --    Ta, Tm, Te, Tw, Nw, compilation(simple=true)
 
 	Strategija* strategija_= nullptr; //Strategija upis/ispis
 };

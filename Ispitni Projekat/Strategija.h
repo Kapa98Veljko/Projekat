@@ -25,10 +25,10 @@ public:
 class Program :public Strategija {
 public:
 	virtual void citajProg(fstream&, vector<char>&) override;
-	bool isOperator(char);
-	bool isOperand(char);
-	int prioritet(char);
-	char infixPostfix(vector<char>&,char);
+	bool isOperator(char) const;
+	bool isOperand(char)const;
+	int prioritet(char) const;
+	void infixPostfix(vector<char>&,fstream&);
 private:
 	stack<char> stack_;
 };

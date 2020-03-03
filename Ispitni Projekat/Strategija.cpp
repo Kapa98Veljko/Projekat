@@ -11,28 +11,25 @@ void Program::citajProg(fstream& program,vector<char>& postfix)
 	postfix.push_back(dodeli);
 	postfix.push_back(c);
 
-	while (program.peek() != '\n')
-	{
-		program >> c;
-		infixPostfix(postfix,c);
-	}
+	infixPostfix(postfix,program);
+	
 }
 
-bool Program::isOperator(char c)
+bool Program::isOperator(char c) const
 {
 	if (c == '^' || c == '*' || c == '/' || c == '+' || c == '-')
 		return true;
 	return false;
 }
 
-bool Program::isOperand(char c)
+bool Program::isOperand(char c) const
 {
 	if ((c >= 'a' && c <= 'z')|| (c >= 'A' && c <= 'Z')|| (c >= '1' && c <= '9'))
 		return true;
 	return false;
 }
 
-int Program::prioritet(char c)
+int Program::prioritet(char c) const
 {
 	if (c == '^')
 		return 3;
@@ -42,14 +39,55 @@ int Program::prioritet(char c)
 		return 1;
 }
 
-char Program::infixPostfix(vector<char>& postfix,char c)
+void Program::infixPostfix(vector<char>& postfix,fstream& program)
 {
-	if (isOperand(c))
-		postfix.push_back(c);
-	else if (isOperator(c)) 
+	char c;
+
+	while (program.peek() != '\n')
 	{
-		if (!stack_.empty())
-			stack_.push(c);
+		program >> c;
+
+		if (c == '(')
+			stack_.push('(');
+
+		else if (isOperand(c))
+			postfix.push_back(c);
+
+		else if (c == ')')
+			while (stack_.top() != '(')
+			{
+				c = stack_.top();
+				postfix.push_back(c);
+			}
+	
+		
+		else if (isOperator(c))
+		{
+			if ((!stack_.empty()) || prioritet(c)>prioritet(stack_.top()))
+				stack_.push(c);
+
+			else if (!stack_.empty() && (prioritet(c) < prioritet(stack_.top()) ))
+			{
+				while (!stack_.empty() && (prioritet(c) < prioritet(stack_.top()) && stack_.top()!='('))
+				{
+					
+					char b = stack_.top();
+					stack_.pop();
+					postfix.push_back(b);
+
+				}
+				if (stack_.top == '(')
+					postfix.push_back(c);
+				else if(prioritet(stack_.top())
+			}
+		}
+	}
+	//Ispisuje sve operatore koji su ostali na stack-u ako ih ima
+	while (!stack_.empty()) 
+	{
+		c = stack_.top();
+		stack_.pop();
+		postfix.push_back(c);
 	}
 }
 
