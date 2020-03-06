@@ -23,8 +23,8 @@ int main() {
 			std::cout << "Unesite ime programa." << endl;
 			std::cin >> imeFajla;
 	
-			//cmp->strategijaBiranje(new Program());
-			//cmp->citaj(ime+".txt",1);
+			cmp->strategijaBiranje(new Program());
+			cmp->kompajluj(imeFajla,1);
 	
 			delete cmp;
 			
