@@ -7,13 +7,14 @@ void Program::citajProg(fstream& program,vector<char>& postfix)
 	char c;
 	//Cita se ona prom. u koju se upise vr. celog izraza sa desne strane.
 	program >>dodeli>> c;
-
 	postfix_.push_back(dodeli);
-
+	//Specijalni slucaaj kada je potrebno da se ubaci negacija broja
 	if (program.peek() == '-')
 	{
 		program >> c;
+		postfix_.push_back(' ');
 		postfix_.push_back(c);
+		
 	}
 
 	infixPostfix(program);
@@ -41,6 +42,8 @@ int Program::prioritet(const char c) const
 {
 	if (stack_.empty())
 		return 0;
+	else if (c == '(')
+		return 4;
 	else if (c == '^')
 		return 3;
 	else if (c == '*' || c=='/')
@@ -54,7 +57,7 @@ void Program::infixPostfix(fstream& program)
 	char c;
 	char b;
 	//Svaki od operanda ce u infix vekotru biti zapisan kao svoja slika u ogledalu.
-	//Izmedju svakog od operanada mora biti jedan ' '.
+	//Izmedju svakog od operanadai operator  mora biti jedan ' '.
 	
 	bool vec_citao = false;
 	
@@ -73,14 +76,12 @@ void Program::infixPostfix(fstream& program)
 		{
 			string operand;
 			operand += c;
-			b=c;
-			while (program.peek() != '\n' && !(isOperator(b)))
-			{
-				program >> b;
-				operand += b;
-				c = b;
-				vec_citao = true;
-			}
+			program >> c;
+			vec_citao = true;
+			while (program.peek() != '\n' && !(isOperator(c)))
+		
+				operand += c;
+	
 		
 			slikaOgledalo(operand);
 		}
@@ -88,14 +89,13 @@ void Program::infixPostfix(fstream& program)
 		//Ako se u izrazu naidje na ')' potrebno je da se sve sa steka ispise dok se ne naidje na '(', a onda se ona izbrise.
 		else if (c == ')')
 		{
-			//Upisujem prazan znak, a onda posle toga upisujem grupu operatora bez razmaka medju njima.
-			if(isOperand(postfix_.back()))
-		     	postfix_.push_back(' ');
-			
+		    //Treba da mi izmedju svaka dva operatora takodje bude razmak
 			while (stack_.top() != '(')
 			{
-				 b = stack_.top();
+				b = stack_.top();
+				postfix_.push_back(' ');
 				postfix_.push_back(b);
+				stack_.pop();
 			}
 			stack_.pop();
 		}
@@ -115,15 +115,15 @@ void Program::infixPostfix(fstream& program)
 			}
 			else if ( prioritet(c) < prioritet(stack_.top()))
 			{
-				b = c;
-
-				postfix_.push_back(c);
+				
+				postfix_.push_back(' ');
+				postfix_.push_back(stack_.top());
 				stack_.pop();
-
-				while (!stack_.empty() && prioritet(b) < prioritet(stack_.top())) 
+				
+				while (!stack_.empty() && prioritet(c) < prioritet(stack_.top())) 
 				{
-					b = stack_.top();
-					postfix_.push_back(b);
+					postfix_.push_back(' ');
+					postfix_.push_back(stack_.top());
 					stack_.pop();
 				}
 			}
@@ -135,6 +135,7 @@ void Program::infixPostfix(fstream& program)
 				//Asocijativnost je sleva na desno stampam i izbrisem  vrh steka pa dodam novi procitani operator.
 				else
 				{
+					postfix_.push_back(' ');
 					postfix_.push_back(stack_.top());
 					stack_.pop();
 					stack_.push(c);
@@ -162,6 +163,9 @@ void Program::prepisi(vector<char>& postfix) const
 	if(!postfix_.empty())
 	for (int i = 0; i < postfix_.size(); i++)
 		postfix.push_back(postfix_[i]);
+	//Znak koji ce mi reci da sam dosao do kraja vektora je znak za dodelu vrednosti '='
+	postfix.push_back(' ');
+	postfix.push_back('=');
 }
 
 void Program::slikaOgledalo(string& operand)
@@ -256,25 +260,85 @@ void Konfiguracija::citajKasnjenje(fstream& ulazni_fajl, vector<int>& konfigurac
 	konfiguracija.push_back(b);
 }
 
-void NojmanIspis::pisi(const string& ime,vector<char>& podaci) 
+static int i = 0;
+
+void NojmanIspis::pisi(fstream& imf, vector<char>& podaci)
 {
-	fstream imf(ime+".imf",ios::out);
-	//U ovom vektoru se u sledecem formatu naleze podaci --[posl. token u koji se upisuje nesto][Ako je prvi oerand negiran{-}Moze biti, a i nemora][operadni,operatori....]
-	
-	int i = 0;
+	//U ovom vektoru se u sledecem formatu naleze podaci --[posl. token u koji se upisuje nesto]'blanko'[Ako je prvi oerand negiran{-}Moze biti, a i nemora]'blanko'[operadni[blanko]operatori[blanko]....]
+
+	i = 0;
 	int duzina = podaci.size();
 
-	string krajnji_token;
+	string dodeli;
+	dodeli += podaci[i];
+
 	string prvi, drugi;
+	string ne_pisi = "nema tokena";
 
+	while (podaci[i] != '=') 
+	{
+		if (i == 2 && podaci[i] == '-')
+		{
+			i = 2;
+			while (podaci[i] != ' ')
+				stack_.push(podaci[i++]);
+			stack_.push('-');
+			i++;
+		}
+		else if (podaci[i] != '+' && podaci[i] != '-' && podaci[i] != '/' && podaci[i] != '^' && podaci[i] != '=') 
+		{
+			if (!stack_.empty())
+				stack_.push(' ');
+		
+			while (podaci[i] != ' ') 
+				stack_.push(podaci[i++]);
+			i++;
+		}
+		else if(podaci[i] != '+' && podaci[i] != '-' && podaci[i] != '/' && podaci[i] != '^')
+		{
+			char operacija = podaci[i];
+			i += 2;
+			
+			string token = "t";
+			token += IDTokena;
+			
+			ispisiStek(prvi);
+			ispisiStek(drugi);
+			ispisiPoFormatu(imf,operacija,token,prvi,drugi);
+			prvi.clear();
+			drugi.clear();
 
-	imf.close();
+			int l = token.length();
+			stack_.push(' ');
+
+			for (int i = l - 1; i >= 0; i--)
+				stack_.push(token[i]);
+		}
+
+	}
+	ispisiStek(drugi);
+	ispisiPoFormatu(imf,'=',dodeli,drugi,ne_pisi);
+
 }
 
-void NojmanIspis::ispisiPoFormatu(fstream& fajl,char operacija, string& prviToken, string& drugiToken, string& treciToken) const
+void NojmanIspis::ispisiPoFormatu(fstream& fajl, char operacija, string& prviToken, string& drugiToken, string& treciToken)
 {
-	if(treciToken=="nema_operanda/tokena")
-	     fajl << '[' << IDReda << ']' <<' '<<operacija<< ' ' << prviToken <<' '<<drugiToken << endl;
+	if (treciToken == "nema tokena")
+
+		fajl << '[' << IDReda << ']' << ' ' << operacija << ' ' << prviToken << ' ' << drugiToken << endl;
 	else
-		fajl << '[' << IDReda << ']' << ' ' << operacija << ' ' << prviToken << ' ' << drugiToken <<' '<<treciToken<< endl;
+		fajl << '[' << IDReda << ']' << ' ' << operacija << ' ' << prviToken << ' ' << drugiToken << ' ' << treciToken << endl;
+
+	IDReda++;
+}
+
+void NojmanIspis::ispisiStek(string& token)
+{
+	while (!stack_.empty() && stack_.top() != ' ')
+	{
+		token += stack_.top();
+		stack_.pop();
+	}
+	if (!stack_.empty())
+		stack_.pop();
 }

@@ -17,6 +17,7 @@ void Compiler::kompajluj(const string& ime,int tip =0)
 	{
 		strategija_->citajKonf(ime+".txt", konfiguracija_);
 		IDReda = 1;
+		IDTokena = 1;
 	}
 	else 
 	{
@@ -41,7 +42,7 @@ void Compiler::kompajluj(const string& ime,int tip =0)
 void Compiler::ispisiImfSimple(const string& ime)
 {
 	fstream program(ime + ".txt", ios::in);
-	
+	fstream imf(ime+".imf", ios::out);
 	
 	while (program.peek() != EOF) 
 	{
@@ -49,10 +50,11 @@ void Compiler::ispisiImfSimple(const string& ime)
 		strategijaBiranje(new Program());
 		strategija_->citajProg(program,postfix_);
 		strategijaBiranje(new NojmanIspis());
-		strategija_->pisi(ime,postfix_);
+		strategija_->pisi(imf,postfix_);
 	}
 
 	program.close();
+	imf.close();
 
 }
 

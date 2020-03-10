@@ -10,6 +10,7 @@
 using namespace std;
 //Poslednji ispisani red da bih pamtio dokle sam stigao sa ispisom
 static int IDReda = 1;
+static int IDTokena = 1;
 
 class Strategija {
 public:
@@ -19,7 +20,7 @@ public:
 	virtual void citajProg(fstream&,vector<char>&) {}
 
 	//Za odabrani nacin stvaranja .imf fajla.
-	virtual void pisi(const string&,vector<char>&) {};
+	virtual void pisi(fstream&,vector<char>&) {};
 };
 
 class Program :public Strategija {
@@ -45,10 +46,13 @@ public:
 
 };
 
+static int token = 1;
+
 class NojmanIspis :public Strategija {
 public:
-	virtual void pisi(const string&,vector<char>&) override;
-	void ispisiPoFormatu(fstream&,char,string&,string&,string&)const;
+	virtual void pisi(fstream&,vector<char>&) override;
+	void ispisiPoFormatu(fstream&,char,string&,string&,string&);
+	void ispisiStek(string&);
 private:
 	
 	stack<char> stack_; //Stek koji ce mi pomoci da vrsim ispis!!!
