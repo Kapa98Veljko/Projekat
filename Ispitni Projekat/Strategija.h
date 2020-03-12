@@ -32,6 +32,7 @@ public:
 	void infixPostfix(fstream&);
 	void prepisi(vector<char>&)const;
 	void slikaOgledalo(string&);
+	void citajOperand(fstream&);
 private:
 	stack<char> stack_;
 	vector<char> postfix_;
@@ -53,6 +54,7 @@ public:
 	virtual void pisi(fstream&,vector<char>&) override;
 	void ispisiPoFormatu(fstream&,char,string&,string&,string&);
 	void ispisiStek(string&);
+	//void ispisi();
 private:
 	
 	stack<char> stack_; //Stek koji ce mi pomoci da vrsim ispis!!!

@@ -9,13 +9,6 @@ void Program::citajProg(fstream& program,vector<char>& postfix)
 	program >>dodeli>> c;
 	postfix_.push_back(dodeli);
 	//Specijalni slucaaj kada je potrebno da se ubaci negacija broja
-	if (program.peek() == '-')
-	{
-		program >> c;
-		postfix_.push_back(' ');
-		postfix_.push_back(c);
-		
-	}
 
 	infixPostfix(program);
 
@@ -33,7 +26,7 @@ bool Program::isOperator(const char c) const
 
 bool Program::isOperand(const char c) const
 {
-	if ((c >= 'a' && c <= 'z')|| (c >= 'A' && c <= 'Z')|| (c >= '1' && c <= '9'))
+	if ((c >= 'a' && c <= 'z')|| (c >= 'A' && c <= 'Z')|| (c >= '0' && c <= '9'))
 		return true;
 	return false;
 }
@@ -61,27 +54,33 @@ void Program::infixPostfix(fstream& program)
 	
 	bool vec_citao = false;
 	
-	while (program.peek() != '\n')
+	if(!(program.peek()=='-'))
+	while (program.peek() != '\n' && program.peek()!=EOF)
 	{
 		if (!vec_citao)
 		{
 			//Ako se dalje u programu bude nailazilo na opcije koje ne zahtevaju da se cita znak unapred da bi se znao uslov za njihov izlazak!!!
-			vec_citao = false;
 			program >> c;
 		}
-
+	
 		//Ako je operand recimo {A,B,C.. 1,2,3..} samo se stavi u vektor.
 		//Medjutim sta ako mi je operand visecifreni broj{X=123+B}? Zbog togo moram da napravim sliku u ogledalu. Takodje moram i da citam sve dok se ne dodje do operatora.
 		if (isOperand(c))
 		{
 			string operand;
 			operand += c;
-			program >> c;
-			vec_citao = true;
-			while (program.peek() != '\n' && !(isOperator(c)))
-		
-				operand += c;
-	
+
+			if (program.peek() != '\n' && program.peek()!=EOF)
+			{
+				program >> c;
+				vec_citao = true;
+
+				while ((program.peek() != '\n') && !(isOperator(c)))
+				{
+					operand += c;
+					program >> c;
+				}
+			}
 		
 			slikaOgledalo(operand);
 		}
@@ -104,14 +103,19 @@ void Program::infixPostfix(fstream& program)
 		else if (isOperator(c))
 		{
 			if (c == '(')
+			{
 				stack_.push(c);
+				vec_citao = false;
+			}
 			else if (stack_.empty())
 			{
 				stack_.push(c);
+				vec_citao = false;
 			}
 			else if (prioritet(c) > prioritet(stack_.top()))
 			{
 				stack_.push(c);
+				vec_citao = false;
 			}
 			else if ( prioritet(c) < prioritet(stack_.top()))
 			{
@@ -131,17 +135,20 @@ void Program::infixPostfix(fstream& program)
 			{
 				//Asocijativnost. Ako je sleva na desno stampam top() i pop-ujem. Ako je sa desna na levo onda push(){Sto je samo slucaj sa ^}
 				if (c == '^')
+				{
 					stack_.push(c);
-				//Asocijativnost je sleva na desno stampam i izbrisem  vrh steka pa dodam novi procitani operator.
+					vec_citao = false;
+				}
+					//Asocijativnost je sleva na desno stampam i izbrisem  vrh steka pa dodam novi procitani operator.
 				else
 				{
 					postfix_.push_back(' ');
 					postfix_.push_back(stack_.top());
 					stack_.pop();
 					stack_.push(c);
+					vec_citao = false;
 				}
 			}
-		
 		}
 	}
 	//Ispisuje sve operatore koji su ostali na stack-u ako ih ima 
@@ -149,6 +156,7 @@ void Program::infixPostfix(fstream& program)
 	{
 		c = stack_.top();
 		stack_.pop();
+		postfix_.push_back(' ');
 		postfix_.push_back(c);
 	}
 }
@@ -156,13 +164,9 @@ void Program::infixPostfix(fstream& program)
 void Program::prepisi(vector<char>& postfix) const
 {
 	//Svrha metode je da prepise ovo jer me mrzi da svud u metodama prenosim ovaj vektor iz Compiler-a, a zbog prava pristupa cu koristiti lokalni za ovu klasu!!!
-	
-	if (!postfix.empty())
-		postfix.clear();
-	
-	if(!postfix_.empty())
 	for (int i = 0; i < postfix_.size(); i++)
 		postfix.push_back(postfix_[i]);
+
 	//Znak koji ce mi reci da sam dosao do kraja vektora je znak za dodelu vrednosti '='
 	postfix.push_back(' ');
 	postfix.push_back('=');
@@ -171,9 +175,8 @@ void Program::prepisi(vector<char>& postfix) const
 void Program::slikaOgledalo(string& operand)
 {
 	//Hocu da mi se izmedu bilo koja dva da li operanda nalazi razmak ' '.Ali ako je prvi operand koji se upisuje ispred njega mi nije potreban razmak.
-	char c;
-	if(postfix_.size()!=0 && isOperand(postfix_.back()))
-		postfix_.push_back(' ');
+
+	postfix_.push_back(' ');
 
 	int l = operand.length();
 	for (int i = l - 1; i >= 0; i--)
@@ -266,26 +269,29 @@ void NojmanIspis::pisi(fstream& imf, vector<char>& podaci)
 {
 	//U ovom vektoru se u sledecem formatu naleze podaci --[posl. token u koji se upisuje nesto]'blanko'[Ako je prvi oerand negiran{-}Moze biti, a i nemora]'blanko'[operadni[blanko]operatori[blanko]....]
 
-	i = 0;
+	i =2 ;
 	int duzina = podaci.size();
 
 	string dodeli;
-	dodeli += podaci[i];
+	dodeli += podaci[0];
 
 	string prvi, drugi;
 	string ne_pisi = "nema tokena";
 
+
+	if (podaci[2] == '-')
+	{
+		i = 4;
+		while (podaci[i] != ' ')
+			stack_.push(podaci[i++]);
+		stack_.push('-');
+		i++;
+	}
+
 	while (podaci[i] != '=') 
 	{
-		if (i == 2 && podaci[i] == '-')
-		{
-			i = 2;
-			while (podaci[i] != ' ')
-				stack_.push(podaci[i++]);
-			stack_.push('-');
-			i++;
-		}
-		else if (podaci[i] != '+' && podaci[i] != '-' && podaci[i] != '/' && podaci[i] != '^' && podaci[i] != '=') 
+		//Ako je operand
+		if (podaci[i] != '+' &&  podaci[i]!='*' &&podaci[i]!= '-' && podaci[i] != '/' && podaci[i] != '^' && podaci[i] != '=') 
 		{
 			if (!stack_.empty())
 				stack_.push(' ');
@@ -294,16 +300,18 @@ void NojmanIspis::pisi(fstream& imf, vector<char>& podaci)
 				stack_.push(podaci[i++]);
 			i++;
 		}
-		else if(podaci[i] != '+' && podaci[i] != '-' && podaci[i] != '/' && podaci[i] != '^')
+		//Ako je operator
+		else if(podaci[i] == '+' || podaci[i]=='*' || podaci[i] == '-' || podaci[i] == '/' || podaci[i] == '^')
 		{
 			char operacija = podaci[i];
 			i += 2;
 			
 			string token = "t";
-			token += IDTokena;
+			token += to_string(IDTokena);
+			IDTokena++;
 			
-			ispisiStek(prvi);
 			ispisiStek(drugi);
+			ispisiStek(prvi);
 			ispisiPoFormatu(imf,operacija,token,prvi,drugi);
 			prvi.clear();
 			drugi.clear();

@@ -51,6 +51,7 @@ void Compiler::ispisiImfSimple(const string& ime)
 		strategija_->citajProg(program,postfix_);
 		strategijaBiranje(new NojmanIspis());
 		strategija_->pisi(imf,postfix_);
+		ocisti();
 	}
 
 	program.close();
@@ -64,6 +65,14 @@ void Compiler::ispisiImfAdvanced(const string& ime)
 	fstream program(ime + ".imf", ios::out);
 	fajl.close();
 	program.close();
+}
+
+void Compiler::ocisti()
+{
+	if (!postfix_.empty())
+		postfix_.clear();
+
+
 }
 
 

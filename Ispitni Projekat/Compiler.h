@@ -26,6 +26,8 @@ public:
 protected:
 	//Moguca protected sekcija
 private:
+	
+	void ocisti();
 
 	vector<char> postfix_;//Postfix oblik izraza se cuva kao niz znakova. [0],[1],[2],[3],[4],[5]
 	vector<int> konfiguracija_;//U ovom poredku se upisuju u vektor --    Ta, Tm, Te, Tw, Nw, compilation(simple=true)
