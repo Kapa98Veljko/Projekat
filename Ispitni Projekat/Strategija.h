@@ -21,19 +21,27 @@ public:
 
 	//Za odabrani nacin stvaranja .imf fajla.
 	virtual void pisi(fstream&,vector<char>&) {};
+
+	//Da proveri da li je znak operand ili operator
+	virtual bool isOperator(const char) const;
+	virtual bool isOperand(const char)const;
 };
 
 class Program :public Strategija {
 public:
+
 	virtual void citajProg(fstream&, vector<char>&) override;
-	bool isOperator(const char) const;
-	bool isOperand(const char)const;
 	int prioritet(const char) const;
 	void infixPostfix(fstream&);
+	void citajOperand(fstream&,string&);
+	void citajOperator();
 	void prepisi(vector<char>&)const;
 	void slikaOgledalo(string&);
-	void citajOperand(fstream&);
+
 private:
+	char c;
+	bool vec_citao_ = false;
+
 	stack<char> stack_;
 	vector<char> postfix_;
 };
@@ -41,10 +49,10 @@ private:
 class Konfiguracija :public Strategija {
 public:
 
-	virtual void citajKonf(const string&,vector<int>&) override;
+	virtual void citajKonf(const string&, vector<int>&) override;
 	int citajVrednosti(fstream&) const;
-	void citajKasnjenje(fstream&,vector<int>&);
-
+	void citajKasnjenje(fstream&, vector<int>&);
+	void citajTipKonf(fstream&,vector<int>&);
 };
 
 static int token = 1;

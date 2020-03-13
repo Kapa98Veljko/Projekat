@@ -1,6 +1,21 @@
 #include "Strategija.h"
 #include<iostream>
 
+bool Strategija::isOperator(const char c) const
+{
+	if (c == '^' || c == '*' || c == '/' || c == '+' || c == '-')
+		return true;
+	return false;
+}
+
+bool Strategija::isOperand(const char c) const
+{
+	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+		return true;
+	return false;
+}
+
+
 void Program::citajProg(fstream& program,vector<char>& postfix)
 {
 	char dodeli;
@@ -17,19 +32,6 @@ void Program::citajProg(fstream& program,vector<char>& postfix)
 	
 }
 
-bool Program::isOperator(const char c) const
-{
-	if (c == '^' || c == '*' || c == '/' || c == '+' || c == '-')
-		return true;
-	return false;
-}
-
-bool Program::isOperand(const char c) const
-{
-	if ((c >= 'a' && c <= 'z')|| (c >= 'A' && c <= 'Z')|| (c >= '0' && c <= '9'))
-		return true;
-	return false;
-}
 
 int Program::prioritet(const char c) const
 {
@@ -47,17 +49,17 @@ int Program::prioritet(const char c) const
 
 void Program::infixPostfix(fstream& program)
 {
-	char c;
-	char b;
-	//Svaki od operanda ce u infix vekotru biti zapisan kao svoja slika u ogledalu.
-	//Izmedju svakog od operanadai operator  mora biti jedan ' '.
-	
-	bool vec_citao = false;
-	
-	if(!(program.peek()=='-'))
+	vec_citao_ = false;
+	/*if (!(program.peek() == '-'))
+	{
+		program >> c;
+		postfix_.push_back(' ');
+		postfix_.push_back(c);
+	}*/
+
 	while (program.peek() != '\n' && program.peek()!=EOF)
 	{
-		if (!vec_citao)
+		if (!vec_citao_)
 		{
 			//Ako se dalje u programu bude nailazilo na opcije koje ne zahtevaju da se cita znak unapred da bi se znao uslov za njihov izlazak!!!
 			program >> c;
@@ -68,19 +70,7 @@ void Program::infixPostfix(fstream& program)
 		if (isOperand(c))
 		{
 			string operand;
-			operand += c;
-
-			if (program.peek() != '\n' && program.peek()!=EOF)
-			{
-				program >> c;
-				vec_citao = true;
-
-				while ((program.peek() != '\n') && !(isOperator(c)))
-				{
-					operand += c;
-					program >> c;
-				}
-			}
+			citajOperand(program,operand);
 		
 			slikaOgledalo(operand);
 		}
@@ -91,7 +81,7 @@ void Program::infixPostfix(fstream& program)
 		    //Treba da mi izmedju svaka dva operatora takodje bude razmak
 			while (stack_.top() != '(')
 			{
-				b = stack_.top();
+				char b = stack_.top();
 				postfix_.push_back(' ');
 				postfix_.push_back(b);
 				stack_.pop();
@@ -105,17 +95,17 @@ void Program::infixPostfix(fstream& program)
 			if (c == '(')
 			{
 				stack_.push(c);
-				vec_citao = false;
+				vec_citao_ = false;
 			}
 			else if (stack_.empty())
 			{
 				stack_.push(c);
-				vec_citao = false;
+				vec_citao_ = false;
 			}
 			else if (prioritet(c) > prioritet(stack_.top()))
 			{
 				stack_.push(c);
-				vec_citao = false;
+				vec_citao_ = false;
 			}
 			else if ( prioritet(c) < prioritet(stack_.top()))
 			{
@@ -137,7 +127,7 @@ void Program::infixPostfix(fstream& program)
 				if (c == '^')
 				{
 					stack_.push(c);
-					vec_citao = false;
+					vec_citao_ = false;
 				}
 					//Asocijativnost je sleva na desno stampam i izbrisem  vrh steka pa dodam novi procitani operator.
 				else
@@ -146,7 +136,7 @@ void Program::infixPostfix(fstream& program)
 					postfix_.push_back(stack_.top());
 					stack_.pop();
 					stack_.push(c);
-					vec_citao = false;
+					vec_citao_ = false;
 				}
 			}
 		}
@@ -158,6 +148,25 @@ void Program::infixPostfix(fstream& program)
 		stack_.pop();
 		postfix_.push_back(' ');
 		postfix_.push_back(c);
+	}
+}
+
+void Program::citajOperand(fstream& program, string& operand)
+{
+	operand += c;
+
+	if (program.peek() != '\n' && program.peek() != EOF)
+	{
+		program >> c;
+		vec_citao_ = true;
+
+		while ((program.peek() != '\n') && !(isOperator(c)))
+		{
+			operand += c;
+			program >> c;
+		}
+		if (!isOperator(c))
+			operand += c;
 	}
 }
 
@@ -185,8 +194,6 @@ void Program::slikaOgledalo(string& operand)
 
 void Konfiguracija::citajKonf(const string& ime_fajla,vector<int>& konfiguracija)
 {
-	//*****-------------------------------------------*****
-	//TREBA JE RAZBITI NA VISE METODA RADI RAZUMLJIVOSTI!!!!
 	fstream konf_fajl(ime_fajla, ios::in);
 	while (konf_fajl.peek() != EOF) 
 	{
@@ -206,23 +213,7 @@ void Konfiguracija::citajKonf(const string& ime_fajla,vector<int>& konfiguracija
 			}
 			else if (t == 'c') 
 			{
-				bool desno = false,simple=true;
-				string kompilacija;
-
-				while (konf_fajl.peek() != EOF) 
-				{  
-					if (t == '=') desno = true;
-					if(!desno)
-					    konf_fajl >> t;
-					else 
-					{
-						konf_fajl >> t;
-						kompilacija += t;
-						if (kompilacija == "advanced")
-							simple= false;
-					}
-				}
-				konfiguracija.push_back(int(simple));
+				citajTipKonf(konf_fajl,konfiguracija);
 			}
 			
 		
@@ -232,6 +223,7 @@ void Konfiguracija::citajKonf(const string& ime_fajla,vector<int>& konfiguracija
 	std::cout << endl;
 	konf_fajl.close();
 }
+
 
 int Konfiguracija::citajVrednosti(fstream& ulazni_fajl) const
 {
@@ -263,6 +255,29 @@ void Konfiguracija::citajKasnjenje(fstream& ulazni_fajl, vector<int>& konfigurac
 	konfiguracija.push_back(b);
 }
 
+void Konfiguracija::citajTipKonf(fstream& fajl,vector<int>& konfiguracija)
+{
+	bool desno = false, simple = true;
+	string kompilacija;
+	char t;
+	fajl >> t;
+
+	while (fajl.peek() != EOF)
+	{
+		if (t == '=') desno = true;
+		if (!desno)
+			fajl >> t;
+		else
+		{
+			fajl >> t;
+			kompilacija += t;
+			if (kompilacija == "advanced")
+				simple = false;
+		}
+	}
+	konfiguracija.push_back(int(simple));
+}
+
 static int i = 0;
 
 void NojmanIspis::pisi(fstream& imf, vector<char>& podaci)
@@ -270,7 +285,6 @@ void NojmanIspis::pisi(fstream& imf, vector<char>& podaci)
 	//U ovom vektoru se u sledecem formatu naleze podaci --[posl. token u koji se upisuje nesto]'blanko'[Ako je prvi oerand negiran{-}Moze biti, a i nemora]'blanko'[operadni[blanko]operatori[blanko]....]
 
 	i =2 ;
-	int duzina = podaci.size();
 
 	string dodeli;
 	dodeli += podaci[0];
@@ -291,7 +305,7 @@ void NojmanIspis::pisi(fstream& imf, vector<char>& podaci)
 	while (podaci[i] != '=') 
 	{
 		//Ako je operand
-		if (podaci[i] != '+' &&  podaci[i]!='*' &&podaci[i]!= '-' && podaci[i] != '/' && podaci[i] != '^' && podaci[i] != '=') 
+		if (!isOperator(podaci[i])) 
 		{
 			if (!stack_.empty())
 				stack_.push(' ');
@@ -301,7 +315,7 @@ void NojmanIspis::pisi(fstream& imf, vector<char>& podaci)
 			i++;
 		}
 		//Ako je operator
-		else if(podaci[i] == '+' || podaci[i]=='*' || podaci[i] == '-' || podaci[i] == '/' || podaci[i] == '^')
+		else if(isOperator(podaci[i]))
 		{
 			char operacija = podaci[i];
 			i += 2;

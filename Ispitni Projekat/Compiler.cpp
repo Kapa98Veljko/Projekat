@@ -71,8 +71,6 @@ void Compiler::ocisti()
 {
 	if (!postfix_.empty())
 		postfix_.clear();
-
-
 }
 
 
