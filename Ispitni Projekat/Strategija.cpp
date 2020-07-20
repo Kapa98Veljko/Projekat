@@ -50,12 +50,7 @@ int Program::prioritet(const char c) const
 void Program::infixPostfix(fstream& program)
 {
 	vec_citao_ = false;
-	/*if (!(program.peek() == '-'))
-	{
-		program >> c;
-		postfix_.push_back(' ');
-		postfix_.push_back(c);
-	}*/
+	prvo_citanje_ = true;
 
 	while (program.peek() != '\n' && program.peek()!=EOF)
 	{
@@ -67,26 +62,13 @@ void Program::infixPostfix(fstream& program)
 	
 		//Ako je operand recimo {A,B,C.. 1,2,3..} samo se stavi u vektor.
 		//Medjutim sta ako mi je operand visecifreni broj{X=123+B}? Zbog togo moram da napravim sliku u ogledalu. Takodje moram i da citam sve dok se ne dodje do operatora.
-		if (isOperand(c))
+		if (isOperand(c) || (prvo_citanje_ && c=='-' ))
 		{
+			if (c == '-')
+				prvo_citanje_ = false;
 			string operand;
 			citajOperand(program,operand);
-		
 			slikaOgledalo(operand);
-		}
-		
-		//Ako se u izrazu naidje na ')' potrebno je da se sve sa steka ispise dok se ne naidje na '(', a onda se ona izbrise.
-		else if (c == ')')
-		{
-		    //Treba da mi izmedju svaka dva operatora takodje bude razmak
-			while (stack_.top() != '(')
-			{
-				char b = stack_.top();
-				postfix_.push_back(' ');
-				postfix_.push_back(b);
-				stack_.pop();
-			}
-			stack_.pop();
 		}
 		
 		//Ako se naidje na operator treba da se proveri sledece. Ako je veceg prioriteta
@@ -97,9 +79,25 @@ void Program::infixPostfix(fstream& program)
 				stack_.push(c);
 				vec_citao_ = false;
 			}
-			else if (stack_.empty())
+			else if (stack_.empty() || stack_.top()=='(')
 			{
 				stack_.push(c);
+				vec_citao_ = false;
+			}
+			else if (c == ')') 
+			{
+				bool nasao = false;
+				while ((!(stack_.empty())) && stack_.top()!='(')
+				{
+					citajStack();
+					if (stack_.top() == '(') 
+				    {
+						nasao = true;
+						stack_.pop();
+					}
+				}
+				if (!nasao)
+					cout<<"Postoji greska jer nije nadjena ( program ne garantuje tacnost rezultata ako se uopste izvrsi !!!"<<endl;
 				vec_citao_ = false;
 			}
 			else if (prioritet(c) > prioritet(stack_.top()))
@@ -109,16 +107,11 @@ void Program::infixPostfix(fstream& program)
 			}
 			else if ( prioritet(c) < prioritet(stack_.top()))
 			{
-				
-				postfix_.push_back(' ');
-				postfix_.push_back(stack_.top());
-				stack_.pop();
+				citajStack();
 				
 				while (!stack_.empty() && prioritet(c) < prioritet(stack_.top())) 
 				{
-					postfix_.push_back(' ');
-					postfix_.push_back(stack_.top());
-					stack_.pop();
+					citajStack();
 				}
 			}
 			else if (prioritet(c) == prioritet(stack_.top()))
@@ -132,9 +125,7 @@ void Program::infixPostfix(fstream& program)
 					//Asocijativnost je sleva na desno stampam i izbrisem  vrh steka pa dodam novi procitani operator.
 				else
 				{
-					postfix_.push_back(' ');
-					postfix_.push_back(stack_.top());
-					stack_.pop();
+					citajStack();
 					stack_.push(c);
 					vec_citao_ = false;
 				}
@@ -144,10 +135,7 @@ void Program::infixPostfix(fstream& program)
 	//Ispisuje sve operatore koji su ostali na stack-u ako ih ima 
 	while (!stack_.empty()) 
 	{
-		c = stack_.top();
-		stack_.pop();
-		postfix_.push_back(' ');
-		postfix_.push_back(c);
+		citajStack();
 	}
 }
 
@@ -160,7 +148,7 @@ void Program::citajOperand(fstream& program, string& operand)
 		program >> c;
 		vec_citao_ = true;
 
-		while ((program.peek() != '\n') && !(isOperator(c)))
+		while ((program.peek() != '\n') && !(isOperator(c)) && (program.peek()!=EOF))
 		{
 			operand += c;
 			program >> c;
@@ -190,6 +178,13 @@ void Program::slikaOgledalo(string& operand)
 	int l = operand.length();
 	for (int i = l - 1; i >= 0; i--)
 		postfix_.push_back(operand[i]);
+}
+
+void Program::citajStack()
+{
+	postfix_.push_back(' ');
+	postfix_.push_back(stack_.top());
+	stack_.pop();
 }
 
 void Konfiguracija::citajKonf(const string& ime_fajla,vector<int>& konfiguracija)
@@ -292,15 +287,6 @@ void NojmanIspis::pisi(fstream& imf, vector<char>& podaci)
 	string prvi, drugi;
 	string ne_pisi = "nema tokena";
 
-
-	if (podaci[2] == '-')
-	{
-		i = 4;
-		while (podaci[i] != ' ')
-			stack_.push(podaci[i++]);
-		stack_.push('-');
-		i++;
-	}
 
 	while (podaci[i] != '=') 
 	{

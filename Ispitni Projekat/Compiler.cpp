@@ -16,6 +16,8 @@ void Compiler::kompajluj(const string& ime,int tip =0)
 	if (b==0) 
 	{
 		strategija_->citajKonf(ime+".txt", konfiguracija_);
+
+		//Potrebno je da se ovde inicijalizuju jer svakog konf fajla je potrebno da se resetuju.
 		IDReda = 1;
 		IDTokena = 1;
 	}

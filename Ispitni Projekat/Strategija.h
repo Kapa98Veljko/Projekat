@@ -37,10 +37,12 @@ public:
 	void citajOperator();
 	void prepisi(vector<char>&)const;
 	void slikaOgledalo(string&);
+	void citajStack();
 
 private:
 	char c;
 	bool vec_citao_ = false;
+	bool prvo_citanje_ = true;
 
 	stack<char> stack_;
 	vector<char> postfix_;
